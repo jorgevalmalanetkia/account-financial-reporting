@@ -106,6 +106,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
             .with_context(active_model="account.move", active_ids=invoice.ids)
             .create(
                 {
+                    "refund_method": "cancel",
                     "reason": "test",
                     "journal_id": invoice.journal_id.id,
                 }
@@ -175,7 +176,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         invoice.action_post()
         picking = self.po.picking_ids.filtered(lambda p: p.state != "done")
         picking.action_confirm()
-        picking.move_ids.quantity = 2.0
+        picking.move_ids.quantity_done = 2.0
         picking.button_validate()
         wiz = self.env["account.sale.stock.report.non.billed.wiz"].create(
             {"date_check": fields.Date.today()}
@@ -201,7 +202,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         picking = self.po.picking_ids[0]
         # Process pickings
         picking.action_confirm()
-        picking.move_ids.quantity = 1.0
+        picking.move_ids.quantity_done = 1.0
         picking.button_validate()
         # Create invoice
         inv_action = self.po.action_create_invoice()
@@ -236,7 +237,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         picking = self.po.picking_ids[0]
         # Process pickings
         picking.action_confirm()
-        picking.move_ids.quantity = 1.0
+        picking.move_ids.quantity_done = 1.0
         picking.button_validate()
         wiz_return_form = Form(
             self.env["stock.return.picking"].with_context(
@@ -280,7 +281,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         picking = self.po.picking_ids[0]
         # Process pickings
         picking.action_confirm()
-        picking.move_ids.quantity = 1.0
+        picking.move_ids.quantity_done = 1.0
         picking.button_validate()
         wiz_return_form = Form(
             self.env["stock.return.picking"].with_context(
@@ -320,7 +321,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         picking = self.po.picking_ids[0]
         # Process pickings
         picking.action_confirm()
-        picking.move_ids.quantity = 1.0
+        picking.move_ids.quantity_done = 1.0
         picking.button_validate()
         inv_action = self.po.action_create_invoice()
         invoice = self.env["account.move"].browse([(inv_action["res_id"])])
@@ -366,7 +367,7 @@ class TestAccountPurchaseStockReportNonBilled(common.TransactionCase):
         picking = self.po.picking_ids[0]
         # Process pickings
         picking.action_confirm()
-        picking.move_ids.quantity = 1.0
+        picking.move_ids.quantity_done = 1.0
         picking.button_validate()
         # Emulate prepaying invoice
         inv_action = self.po.action_create_invoice()

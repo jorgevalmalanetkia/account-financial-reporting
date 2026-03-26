@@ -59,19 +59,28 @@ class StockMove(models.Model):
                         return qty
                     invoiced += qty
                 return 0
-            return self.quantity if not self.check_is_return() else -self.quantity
+            return (
+                self.quantity
+                if not self.check_is_return()
+                else -self.quantity
+            )
         return super().get_quantity_invoiced(invoice_lines)
 
     def _set_not_invoiced_values(self, qty_to_invoice, invoiced_qty):
         self.ensure_one()
         if self.purchase_line_id:
-            self.quantity_not_invoiced = qty_to_invoice - invoiced_qty
+            qty_value = qty_to_invoice - invoiced_qty
             price_unit = self.purchase_line_id.price_unit
             if "discount" in self.purchase_line_id._fields:
                 price_unit = self.purchase_line_id.price_unit * (
                     1 - self.purchase_line_id.discount / 100
                 )
-            self.price_not_invoiced = (qty_to_invoice - invoiced_qty) * price_unit
+            price_value = qty_value * price_unit
+            self.quantity_not_invoiced = qty_value
+            self.price_not_invoiced = price_value
+            # Update stored fields for pivot views
+            self.quantity_not_invoiced_stored = qty_value
+            self.price_not_invoiced_stored = price_value
         else:
             return super()._set_not_invoiced_values(qty_to_invoice, invoiced_qty)
 
